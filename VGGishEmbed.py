@@ -91,7 +91,7 @@ clf.fit(fullEmbed,numpyTarget)
 ######################################################################
 guessFile = "client_audio.wav"
 guessEmbed = model.forward(guessFile)
-numpyGuessEmbed = [ item.detach().numpy() for item in testStrokeEmbed]
+numpyGuessEmbed = [ item.detach().numpy() for item in guessEmbed]
 overallGuess = 0
 for item in numpyGuessEmbed:
     testValue = (item)
