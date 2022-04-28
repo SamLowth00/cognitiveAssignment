@@ -25,9 +25,20 @@ numpyStrokeEmbed = [ item.detach().numpy() for item in strokeEmbed]
 fullEmbed = np.concatenate((numpyPinchEmbed,numpyBackgroundEmbed,numpyStrokeEmbed), axis=0)
 #CLASSIFICATION
 #define the target and target names
-target = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2]
-numpyTarget = np.array(target)
-target_names = ['Pinch','Nothing','Stroke']
+targetPinch = np.array([])
+targetStroke = np.array([])
+targetBackground = np.array([])
+for item in numpyBackgroundEmbed:
+    np.append(targetBackground,0)
+for item in numpyPinchEmbed:
+    np.append(targetStroke,1)
+for item in numpyEmbed:
+    np.append(targetPinch,2)
+
+#target = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2]
+#numpyTarget = np.array(target)
+#target_names = ['Pinch','Nothing','Stroke']
+numpyTarget = np.concatenate((targetBackground,targetStroke,targetPinch), axis=0)
 
 #define classifier and train the data
 clf = svm.SVC(kernel='linear')
@@ -101,10 +112,10 @@ for item in numpyGuessEmbed:
     overallGuess = overallGuess + testResult[0]
 overallGuess = overallGuess / len(numpyGuessEmbed)
 if (overallGuess < 0.5) and (overallGuess > 0):
-    print("STROKE")
-else if (overallGuess >= 0.5) and (overallGuess <= 1.5):
     print("NOTHING")
-else if (overallGuess >= 1.5) and (overallGuess <= 2):
+elif (overallGuess >= 0.75) and (overallGuess <= 1.25):
+    print("STROKE")
+elif (overallGuess >= 1.25) and (overallGuess <= 2):
     print("PINCH")
 else:
     print("error")
