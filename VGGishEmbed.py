@@ -5,6 +5,10 @@ from sklearn import svm
 model = torch.hub.load('harritaylor/torchvggish', 'vggish')
 model.eval()
 
+# Converts embed from float to int to improve performance
+def quantization(embed):
+    return (np.array(embed, dtype='int'))
+
 #import files
 pinchFile = "EarPinch2.wav"
 strokeFile = "EarStroke2.wav"
@@ -19,7 +23,17 @@ backgroundEmbed = model.forward(backgroundFile)
 numpyPinchEmbed = [ item.detach().numpy() for item in pinchEmbed]
 numpyBackgroundEmbed = [ item.detach().numpy() for item in backgroundEmbed]
 numpyStrokeEmbed = [ item.detach().numpy() for item in strokeEmbed]
+
+# Quantization (1/3)
+numpyPinchEmbed = quantization(numpyPinchEmbed)
+numpyBackgroundEmbed = quantization(numpyBackgroundEmbed)
+numpyStrokeEmbed = quantization(numpyStrokeEmbed)
+
 fullEmbed = np.concatenate((numpyPinchEmbed,numpyBackgroundEmbed,numpyStrokeEmbed), axis=0)
+
+# Quantization (2/3)
+fullEmbed = quantization(fullEmbed)
+
 #CLASSIFICATION
 #define the target and target names
 target = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2]
@@ -38,6 +52,10 @@ numpyTestPinchEmbed = [ item.detach().numpy() for item in testPinchEmbed]
 testStroke = "EarStrokeTestData2.wav"
 testStrokeEmbed = model.forward(testStroke)
 numpyTestStrokeEmbed = [ item.detach().numpy() for item in testStrokeEmbed]
+
+# Quantization (3/3)
+numpyTestPinchEmbed = quantization(numpyTestPinchEmbed)
+numpyTestStrokeEmbed = quantization(numpyTestStrokeEmbed)
 
 #print(len(numpyTestEmbed))
 
