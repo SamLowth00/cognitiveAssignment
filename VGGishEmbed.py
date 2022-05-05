@@ -7,7 +7,26 @@ from sklearn import svm
 model = torch.hub.load('harritaylor/torchvggish', 'vggish')
 model.eval()
 
-guessFile = "client_audio.wav"
+# For onboard computation, comment out all but return to disable any optimsations
+def optimisation(embed):
+    embed = quantization(embed)
+    embed = pruning(embed)
+    embed = fusing(embed)
+    return embed
+
+# Converts embed from float to int to improve performance
+def quantization(embed):
+    return (np.array(embed, dtype='int'))
+
+def pruning(embed):
+    THRESHOLD_VALUE = 100
+    return embed
+    # return (np.where(embed > THRESHOLD_VALUE, 255, 0))
+
+def fusing(embed):
+    return embed
+
+guessFile = "EarPinch2.wav" # Change back to client_audio.wav
 #import files
 pinchFile = "pinch5mintraining.wav"
 strokeFile = "stroke5mintraining.wav"
@@ -37,72 +56,50 @@ for item in numpyStrokeEmbed:
     target.append(1)
 for item in numpyPinchEmbed
     target.append(2)
-numpyTarget = np.array(target)    
+numpyTarget = np.array(target)
 #define classifier and train the data
 clf = svm.SVC(kernel='linear')
 clf.fit(fullEmbed,numpyTarget)
 
 #set up a test 1 second
-# testPinch = "EarPinchTestData2.wav"
-# testPinchEmbed = model.forward(testPinch)
-# numpyTestPinchEmbed = [ item.detach().numpy() for item in testPinchEmbed]
-#
-# testStroke = "EarStrokeTestData2.wav"
-# testStrokeEmbed = model.forward(testStroke)
-# numpyTestStrokeEmbed = [ item.detach().numpy() for item in testStrokeEmbed]
+testPinch = "EarPinchTestData2.wav"
+testPinchEmbed = model.forward(testPinch)
+numpyTestPinchEmbed = [ item.detach().numpy() for item in testPinchEmbed]
 
-#print(len(numpyTestEmbed))
+testStroke = "EarStrokeTestData2.wav"
+testStrokeEmbed = model.forward(testStroke)
+numpyTestStrokeEmbed = [ item.detach().numpy() for item in testStrokeEmbed]
 
-#testValue = (numpyTestEmbed[15])
-#testValue = testValue.reshape(1,-1)
+# Optimisation (3/3)
+numpyTestPinchEmbed = optimisation(numpyTestPinchEmbed)
+numpyTestStrokeEmbed = optimisation(numpyTestStrokeEmbed)
 
-#predict the result
-#testResult = clf.predict(testValue)
+# print(len(numpyTestEmbed))
+
+# testValue = (numpyTestEmbed[15])
+# testValue = testValue.reshape(1,-1)
+
+# predict the result
+# testResult = clf.predict(testValue)
 
 ###########################################################
-# overallPinchTest = 0
-# overallNothingTest = 0
-# overallStrokeTest = 0
-# for item in numpyTestPinchEmbed:
-#     testValue = (item)
-#     testValue = testValue.reshape(1,-1)
-#
-#     testResult = clf.predict(testValue)
-#     overallPinchTest = overallPinchTest + testResult[0]
-# overallPinchTest = overallPinchTest / len(numpyTestPinchEmbed)
-# print("Closer to 0 = Pinch")
-# print("Closer to 1 = Nothing")
-# print("Closer to 2 = Stroke")
-# print("The average value for the pinch test data is:")
-# print(overallPinchTest)
-#
-# for item in numpyBackgroundEmbed:
-#     testValue = (item)
-#     testValue = testValue.reshape(1,-1)
-#
-#     testResult = clf.predict(testValue)
-#     overallNothingTest = overallNothingTest + testResult[0]
-# overallNothingTest = overallNothingTest / len(numpyBackgroundEmbed)
-# print("The average value for the Background noise test data is:")
-# print(overallNothingTest)
-#
-# for item in numpyTestStrokeEmbed:
-#     testValue = (item)
-#     testValue = testValue.reshape(1,-1)
-#
-#     testResult = clf.predict(testValue)
-#     overallStrokeTest = overallStrokeTest + testResult[0]
-# overallStrokeTest = overallStrokeTest / len(numpyTestStrokeEmbed)
-# print("The average value for the stroke test data is:")
-# print(overallStrokeTest)
-#print(target_names[testResult[0]])
+overallPinchTest = 0
+overallNothingTest = 0
+overallStrokeTest = 0
+for item in numpyTestPinchEmbed:
+    testValue = (item)
+    testValue = testValue.reshape(1,-1)
 
-######################################################################
-guessFile = "client_audio.wav"
-guessEmbed = model.forward(guessFile)
-numpyGuessEmbed = [ item.detach().numpy() for item in guessEmbed]
-overallGuess = 0
-for item in numpyGuessEmbed:
+    testResult = clf.predict(testValue)
+    overallPinchTest = overallPinchTest + testResult[0]
+overallPinchTest = overallPinchTest / len(numpyTestPinchEmbed)
+print("Closer to 0 = Pinch")
+print("Closer to 1 = Nothing")
+print("Closer to 2 = Stroke")
+print("The average value for the pinch test data is:")
+print(overallPinchTest)
+
+for item in numpyBackgroundEmbed:
     testValue = (item)
     testValue = testValue.reshape(1,-1)
 
