@@ -26,7 +26,7 @@ def pruning(embed):
 def fusing(embed):
     return embed
 
-guessFile = "EarPinch2.wav" # Change back to client_audio.wav
+guessFile = "client_audio.wav" # Change back to client_audio.wav
 #import files
 pinchFile = "pinch5mintraining.wav"
 strokeFile = "stroke5mintraining.wav"
