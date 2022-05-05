@@ -1,14 +1,16 @@
+print("penis")
 #EMBEDDER
 import torch
 import numpy as np
+import time
 from sklearn import svm
 model = torch.hub.load('harritaylor/torchvggish', 'vggish')
 model.eval()
 
 guessFile = "client_audio.wav"
 #import files
-pinchFile = "EarPinch2.wav"
-strokeFile = "EarStroke2.wav"
+pinchFile = "pinch5mintraining.wav"
+strokeFile = "stroke5mintraining.wav"
 backgroundFile = "BackgroundNoise.wav"
 
 #embed the file
@@ -22,24 +24,20 @@ guessEmbed = model.forward(guessFile)
 numpyPinchEmbed = [ item.detach().numpy() for item in pinchEmbed]
 numpyBackgroundEmbed = [ item.detach().numpy() for item in backgroundEmbed]
 numpyStrokeEmbed = [ item.detach().numpy() for item in strokeEmbed]
-fullEmbed = np.concatenate((numpyPinchEmbed,numpyBackgroundEmbed,numpyStrokeEmbed), axis=0)
+fullEmbed = np.concatenate((numpyBackgroundEmbed,numpyPinchEmbed,numpyStrokeEmbed), axis=0)
 #CLASSIFICATION
 #define the target and target names
-targetPinch = np.array([])
-targetStroke = np.array([])
-targetBackground = np.array([])
-for item in numpyBackgroundEmbed:
-    np.append(targetBackground,0)
-for item in numpyPinchEmbed:
-    np.append(targetStroke,1)
-for item in numpyEmbed:
-    np.append(targetPinch,2)
-
 #target = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2]
-#numpyTarget = np.array(target)
-#target_names = ['Pinch','Nothing','Stroke']
-numpyTarget = np.concatenate((targetBackground,targetStroke,targetPinch), axis=0)
-
+target = []
+numpyTarget = np.array(target)
+target_names = ['Pinch','Nothing','Stroke']
+for item in numpyBackgroundEmbed:
+    target.append(0)
+for item in numpyStrokeEmbed:
+    target.append(1)
+for item in numpyPinchEmbed
+    target.append(2)
+numpyTarget = np.array(target)    
 #define classifier and train the data
 clf = svm.SVC(kernel='linear')
 clf.fit(fullEmbed,numpyTarget)
@@ -109,13 +107,16 @@ for item in numpyGuessEmbed:
     testValue = testValue.reshape(1,-1)
 
     testResult = clf.predict(testValue)
+    print(testResult[0])
     overallGuess = overallGuess + testResult[0]
 overallGuess = overallGuess / len(numpyGuessEmbed)
+print("guess value is")
+print(overallGuess)
 if (overallGuess < 0.5) and (overallGuess > 0):
     print("NOTHING")
-elif (overallGuess >= 0.75) and (overallGuess <= 1.25):
+elif (overallGuess >= 0.5) and (overallGuess <= 1):
     print("STROKE")
-elif (overallGuess >= 1.25) and (overallGuess <= 2):
+elif (overallGuess >= 1) and (overallGuess <= 2):
     print("PINCH")
 else:
     print("error")
