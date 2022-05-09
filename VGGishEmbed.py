@@ -43,7 +43,7 @@ numpyGuessEmbed = [ item.detach().numpy() for item in guessEmbed]
 numpyPinchEmbed = [ item.detach().numpy() for item in pinchEmbed]
 numpyBackgroundEmbed = [ item.detach().numpy() for item in backgroundEmbed]
 numpyStrokeEmbed = [ item.detach().numpy() for item in strokeEmbed]
-fullEmbed = np.concatenate((numpyBackgroundEmbed,numpyPinchEmbed,numpyStrokeEmbed), axis=0)
+fullEmbed = np.concatenate((numpyBackgroundEmbed,numpyStrokeEmbed,numpyPinchEmbed), axis=0)
 #CLASSIFICATION
 #define the target and target names
 #target = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2]
@@ -54,7 +54,7 @@ for item in numpyBackgroundEmbed:
     target.append(0)
 for item in numpyStrokeEmbed:
     target.append(1)
-for item in numpyPinchEmbed
+for item in numpyPinchEmbed:
     target.append(2)
 numpyTarget = np.array(target)
 #define classifier and train the data
@@ -83,21 +83,21 @@ numpyGuessEmbed = optimisation(numpyGuessEmbed)
 # testResult = clf.predict(testValue)
 
 ###########################################################
-overallPinchTest = 0
-overallNothingTest = 0
-overallStrokeTest = 0
-for item in numpyTestPinchEmbed:
-    testValue = (item)
-    testValue = testValue.reshape(1,-1)
-
-    testResult = clf.predict(testValue)
-    overallPinchTest = overallPinchTest + testResult[0]
-overallPinchTest = overallPinchTest / len(numpyTestPinchEmbed)
+#overallPinchTest = 0
+#overallNothingTest = 0
+#overallStrokeTest = 0
+#for item in numpyTestPinchEmbed:
+#    testValue = (item)
+#    testValue = testValue.reshape(1,-1)
+#
+#    testResult = clf.predict(testValue)
+#    overallPinchTest = overallPinchTest + testResult[0]
+#overallPinchTest = overallPinchTest / len(numpyTestPinchEmbed)
 #print("Closer to 0 = Pinch")
 #print("Closer to 2 = Stroke")
 #print("The average value for the pinch test data is:")
 #print(overallPinchTest)
-
+overallGuess = 0
 for item in numpyGuessEmbed:
     testValue = (item)
     testValue = testValue.reshape(1,-1)
@@ -109,7 +109,7 @@ for item in numpyGuessEmbed:
 overallGuess = overallGuess / len(numpyGuessEmbed)
 print("guess value is")
 print(overallGuess)
-if (overallGuess < 0.5) and (overallGuess > 0):
+if (overallGuess < 0.5) and (overallGuess >= 0):
     print("NOTHING")
 elif (overallGuess >= 0.5) and (overallGuess <= 1):
     print("STROKE")
