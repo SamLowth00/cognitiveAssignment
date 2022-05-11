@@ -4,7 +4,7 @@ import torch
 import numpy as np
 import time
 from sklearn import svm
-model = torch.hub.load('harritaylor/torchvggish', 'vggish')
+model = torch.hub.load('torchvggish', 'vggish', source = 'local')
 model.eval()
 
 # For onboard computation, comment out all but return to disable any optimsations
