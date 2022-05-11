@@ -1,5 +1,8 @@
+import rospy
 import os
-
+import miro2 as miro
+from std_msgs.msg import Float32MultiArray, UInt32MultiArray, UInt16MultiArray, UInt8MultiArray, UInt16, Int16MultiArray, String
+		
 #EMBEDDER
 import torch
 import numpy as np
@@ -7,6 +10,17 @@ import time
 from sklearn import svm
 model = torch.hub.load('torchvggish', 'vggish', source = 'local')
 model.eval()
+
+front_left, mid_left, rear_left, front_right, mid_right, rear_right = range(6)
+illum = UInt32MultiArray()
+illum.data = [0xFFFFFFF0, 0xFFFFFFF0, 0xFFFFFFF0, 0xFFFFFFF0, 0xFFFFFFF0, 0xFFFFFFF0]
+topic_base_name = "/" + os.getenv("MIRO_ROBOT_NAME")
+pub_illum = rospy.Publisher(topic_base_name + "/control/illum", UInt32MultiArray, queue_size=0)
+rospy.init_node("client_illum")
+
+value = 0xFFFF0000
+for x in range(6):
+	illum.data[x] = value
 
 #import files
 pinchFile = "pinch5mintraining.wav"
@@ -56,14 +70,22 @@ while True:
 	overallGuess = overallGuess / len(numpyGuessEmbed)
 	print("guess value is")
 	print(overallGuess)
-	if (overallGuess < 0.5) and (overallGuess >= 0):
+	if (overallGuess < 1) and (overallGuess >= 0):
 	    print("NOTHING")
-	elif (overallGuess >= 0.5) and (overallGuess <= 1):
+	    value = 0xFF0000FF
+	elif (overallGuess >= 1) and (overallGuess <= 1.5):
 	    print("STROKE")
-	elif (overallGuess >= 1) and (overallGuess <= 2):
+	    value = 0xFF00FF00
+	elif (overallGuess > 1.5) and (overallGuess <= 2):
 	    print("PINCH")
+	    value = 0xFFFF0000
 	else:
 	    print("error")
+	
+	for x in range(6):
+		illum.data[x] = value
+		
+	pub_illum.publish(illum)
 
 #from client_audio_edit import client
 
