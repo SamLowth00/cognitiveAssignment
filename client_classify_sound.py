@@ -2,6 +2,10 @@ import rospy
 import os
 import miro2 as miro
 from std_msgs.msg import Float32MultiArray, UInt32MultiArray, UInt16MultiArray, UInt8MultiArray, UInt16, Int16MultiArray, String
+
+#Noise reduction imports
+import noisereduce as nr
+import soundfile as sf
 		
 #EMBEDDER
 import torch
@@ -22,9 +26,23 @@ value = 0xFFFF0000
 for x in range(6):
 	illum.data[x] = value
 
+#Noise Reduction Function
+def noise_reduction(dataWav, backgroundWav, outputFile, stationary):
+    data, rate = sf.read(dataWav)
+    noise_data, noise_rate = sf.read(backgroundWav)
+    reduced_noise = np.empty([len(data),0])
+    for i in range (0,(data.shape[1])):
+        if (stationary):
+            index_reduced_noise = nr.reduce_noise(y = (data[:,i]), sr=rate, y_noise = (noise_data[:,i]), n_std_thresh_stationary=1.5,stationary=True)
+        else:
+            index_reduced_noise = nr.reduce_noise(y = (data[:,i]), sr=rate, thresh_n_mult_nonstationary=2,y_noise = noise_data,stationary=False)
+        reduced_noise = np.insert(reduced_noise,i,index_reduced_noise, axis=1)
+    sf.write(outputFile, reduced_noise, rate)
+
+
 #import files
-pinchFile = "pinch5mintraining.wav"
-strokeFile = "stroke5mintraining.wav"
+pinchFile = "pinch5mintrainingNR.wav"
+strokeFile = "stroke5mintrainingNR.wav"
 backgroundFile = "BackgroundNoise.wav"
 
 #embed the file
@@ -54,7 +72,8 @@ clf.fit(fullEmbed,numpyTarget)
 
 while True:
 	os.system('python3 client_audio.py record')
-	guessFile = "client_audio.wav"
+	noise_reduction("client_audio.wav", "BackgroundNoise.wav","client_audio_reduced.wav", True)
+	guessFile = "client_audio_reduced.wav"
 	guessEmbed = model.forward(guessFile)
 	numpyGuessEmbed = [ item.detach().numpy() for item in guessEmbed]
 
